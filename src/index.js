@@ -4,17 +4,26 @@ const ctx = canvas.getContext("2d");
 let h = 0;
 
 canvas.onmousemove = function (ev) {
-  const { x, y } = ev;
-  const { r, g, b } = hslToRgb(h);
+  ctx.save();
+  drawCircle(ev);
+  ctx.translate(1500, 1000)
+  ctx.rotate(Math.PI);
+  drawCircle(ev);
+  ctx.restore();
   h++;
   h %= 360;
+};
+
+function drawCircle(ev) {
+  const { x, y } = ev;
+  const { r, g, b } = hslToRgb(h);
   // ctx.fillStyle = "rgb()";
   // ctx.fillRect(x, y, 100, 100);
   ctx.strokeStyle = `rgb(${r},${g},${b})`;
   ctx.beginPath();
   ctx.arc(x, y, 40, 0, Math.PI * 2);
   ctx.stroke();
-};
+}
 
 function hslToRgb(h, s = 100, l = 50) {
   // Convert HSL values to 0-1 range
