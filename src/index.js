@@ -1,35 +1,51 @@
+// GLOBALS
+let hue = 0;
+let size = 10
+
+// CANVAS
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-const modeElem = document.getElementById('modality');
-const modes = {single, rotated, }
+// RESET
+const resetElem = document.getElementById("reset");
+resetElem.onclick = ev => ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-canvas.onmousemove = single;
+// INSTANCE SIZE
+const instanceSizeElem = document.getElementById('instance-size');
+instanceSizeElem.onchange = changeSize;
 
-modeElem.onchange = setMode;
-
-let hue = 0;
-
-function setMode(ev){
-  canvas.onmousemove = modes[ev.target.value]
+function changeSize(ev){
+  console.log(ev.target.value)
+  size = ev.target.value;
 }
 
-function single (ev) {
+// MODES
+const modeElem = document.getElementById("modality");
+const modes = { single, rotated };
+canvas.onmousemove = single;
+modeElem.onchange = setMode;
+
+
+function setMode(ev) {
+  canvas.onmousemove = modes[ev.target.value];
+}
+
+function single(ev) {
   drawCircle(ev);
   hue++;
   hue %= 360;
-};
+}
 
-function rotated (ev) {
+function rotated(ev) {
   ctx.save();
   drawCircle(ev);
-  ctx.translate(canvas.width, canvas.height)
+  ctx.translate(canvas.width, canvas.height);
   ctx.rotate(Math.PI);
   drawCircle(ev);
   ctx.restore();
   hue++;
   hue %= 360;
-};
+}
 
 function drawCircle(ev) {
   const { x, y } = ev;
@@ -38,7 +54,7 @@ function drawCircle(ev) {
   // ctx.fillRect(x, y, 100, 100);
   ctx.strokeStyle = `rgb(${r},${g},${b})`;
   ctx.beginPath();
-  ctx.arc(x, y, 40, 0, Math.PI * 2);
+  ctx.arc(x, y, size, 0, Math.PI * 2);
   ctx.stroke();
 }
 
