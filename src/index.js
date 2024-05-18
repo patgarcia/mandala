@@ -15,13 +15,14 @@ const instanceSizeElem = document.getElementById('instance-size');
 instanceSizeElem.onchange = changeSize;
 
 function changeSize(ev){
-  console.log(ev.target.value)
   size = ev.target.value;
 }
 
 // MODES
 const modeElem = document.getElementById("modality");
 const modes = { single, rotated };
+
+//initialize mode
 canvas.onmousemove = single;
 modeElem.onchange = setMode;
 
