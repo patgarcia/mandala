@@ -1,22 +1,39 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-let h = 0;
+const modeElem = document.getElementById('modality');
+const modes = {single, rotated, }
 
-canvas.onmousemove = function (ev) {
+canvas.onmousemove = single;
+
+modeElem.onchange = setMode;
+
+let hue = 0;
+
+function setMode(ev){
+  canvas.onmousemove = modes[ev.target.value]
+}
+
+function single (ev) {
+  drawCircle(ev);
+  hue++;
+  hue %= 360;
+};
+
+function rotated (ev) {
   ctx.save();
   drawCircle(ev);
-  ctx.translate(1500, 1000)
+  ctx.translate(canvas.width, canvas.height)
   ctx.rotate(Math.PI);
   drawCircle(ev);
   ctx.restore();
-  h++;
-  h %= 360;
+  hue++;
+  hue %= 360;
 };
 
 function drawCircle(ev) {
   const { x, y } = ev;
-  const { r, g, b } = hslToRgb(h);
+  const { r, g, b } = hslToRgb(hue);
   // ctx.fillStyle = "rgb()";
   // ctx.fillRect(x, y, 100, 100);
   ctx.strokeStyle = `rgb(${r},${g},${b})`;
