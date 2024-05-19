@@ -1,63 +1,124 @@
 // GLOBALS
 let hue = 0;
-let size = 10
+let size = 10;
+let autopaint = true;
+let manualpaint = false;
+let brush;
 
 // CANVAS
 const canvas = document.getElementById("canvas");
+// TODO: check how to avoid double clicking the canvas and selecting the whole page
+// canvas.ondblclick = function(ev){
+//   ev.preventDefault();
+//   ev.stopPropagation();
+// }
 const ctx = canvas.getContext("2d");
+
+// MANUAL PAINT
+canvas.onmousedown = function (ev) {
+  manualpaint = true;
+};
+canvas.onmouseup = function (ev) {
+  manualpaint = false;
+};
 
 // RESET
 const resetElem = document.getElementById("reset");
-resetElem.onclick = ev => ctx.clearRect(0, 0, canvas.width, canvas.height);
+resetElem.onclick = (ev) => ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+// BRUSH
+const brushElem = document.getElementById("brush");
+brush = brushElem.value;
+console.log({ brush });
+brushElem.onchange = (ev) => brush = ev.target.value;
 
 // INSTANCE SIZE
-const instanceSizeElem = document.getElementById('instance-size');
+const instanceSizeElem = document.getElementById("instance-size");
 instanceSizeElem.onchange = changeSize;
 
-function changeSize(ev){
+function changeSize(ev) {
   size = ev.target.value;
+}
+
+// AUTO PAINT
+const autoPaintElem = document.getElementById("auto-paint");
+autoPaintElem.onchange = autoPaintOnChange;
+const drawingEventType = { false: "onmousedown", true: "onmousemove" };
+
+function autoPaintOnChange(ev) {
+  autopaint = ev.target.checked;
 }
 
 // MODES
 const modeElem = document.getElementById("modality");
-const modes = { single, rotated };
+const modes = { single, rotated, reflected };
+
+// WRAPPERS
+const paintWrapper = (paintType) => (ev) =>
+  autopaint || manualpaint ? paintType(ev) : null;
 
 //initialize mode
-canvas.onmousemove = single;
-modeElem.onchange = setMode;
+canvas[drawingEventType[autopaint]] = paintWrapper(single);
+modeElem.onchange = modeOnChange;
 
+function modeOnChange(ev) {
+  const mode = ev?.target.value;
+  setMode(mode);
+}
 
-function setMode(ev) {
-  canvas.onmousemove = modes[ev.target.value];
+function setMode(mode) {
+  // switch mode and its event handler based on autopaint
+  canvas.onmousemove = paintWrapper(modes[mode]);
 }
 
 function single(ev) {
-  drawCircle(ev);
+  draw(ev);
+  hue++;
+  hue %= 360;
+}
+
+function reflected(ev) {
+  ctx.save();
+  draw(ev);
+  ctx.transform(-1, 0, 0, 1, canvas.width, 0);
+  draw(ev);
+  ctx.restore();
   hue++;
   hue %= 360;
 }
 
 function rotated(ev) {
   ctx.save();
-  drawCircle(ev);
-  ctx.translate(canvas.width, canvas.height);
-  ctx.rotate(Math.PI);
-  drawCircle(ev);
+  draw(ev);
+  ctx.transform(-1, 0, 0, -1, canvas.width, canvas.height);
+  draw(ev);
   ctx.restore();
   hue++;
   hue %= 360;
 }
 
-function drawCircle(ev) {
+const brushes = {circle, square}
+
+function circle(x, y) {
+  ctx.beginPath();
+  ctx.arc(x, y, size, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+function square(x, y) {
+  ctx.strokeRect(x, y, size, size);
+}
+
+
+function draw(ev) {
   const { x, y } = ev;
   const { r, g, b } = hslToRgb(hue);
   // ctx.fillStyle = "rgb()";
   // ctx.fillRect(x, y, 100, 100);
   ctx.strokeStyle = `rgb(${r},${g},${b})`;
-  ctx.beginPath();
-  ctx.arc(x, y, size, 0, Math.PI * 2);
-  ctx.stroke();
+  brushes[brush](x, y);
 }
+
 
 function hslToRgb(h, s = 100, l = 50) {
   // Convert HSL values to 0-1 range
