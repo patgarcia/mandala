@@ -5,8 +5,9 @@ let halfSize = size / 2;
 let autopaint = true;
 let manualpaint = false;
 let brush;
-let mouse = {x:0, y:0}
+let mouse = { x: 0, y: 0 };
 const imageData = [];
+const divisions = 5;
 
 // CANVAS
 const canvas = document.getElementById("canvas");
@@ -24,6 +25,12 @@ window.addEventListener("resize", (ev) => {
 //   ev.stopPropagation();
 // }
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
+function drawPlane() {
+  ctx.strokeStyle = "black";
+  ctx.strokeRect(0, canvas.height / 2, canvas.width, 0);
+  ctx.strokeRect(canvas.width / 2, 0, 0, canvas.height);
+}
+drawPlane();
 
 // MANUAL PAINT
 canvas.onmousedown = function (ev) {
@@ -86,13 +93,13 @@ resetElem.onclick = (ev) => {
 const brushElem = document.getElementById("brush");
 brush = brushElem.value;
 brushElem.onchange = (ev) => {
-  brush = ev.target.value
-  modifyCursor(mouse)
+  brush = ev.target.value;
+  modifyCursor(mouse);
 };
 
 // INSTANCE SIZE
 const instanceSizeElem = document.getElementById("instance-size");
-instanceSizeElem.addEventListener('input', changeSize)
+instanceSizeElem.addEventListener("input", changeSize);
 instanceSizeElem.value = size;
 
 function changeSize(ev) {
@@ -111,7 +118,7 @@ function autoPaintOnChange(ev) {
 
 // MODES
 const modeElem = document.getElementById("modality");
-const modes = { single, rotated, reflected };
+const modes = { single, rotated, reflected, division };
 
 // WRAPPERS
 const paintWrapper = (paintType) => (ev) =>
@@ -157,6 +164,77 @@ function rotated(ev) {
   hue %= 360;
 }
 
+// function division(ev) {
+//   const angle = Math.PI * 2 / divisions;
+//   for(let segment=0; segment < divisions; segment++){
+//     ctx.save();
+//     if(segment){
+//       ctx.rotate(segment * angle)
+//       ctx.translate()
+//     }
+//     draw(ev);
+//     hue++;
+//     hue %= 360;
+//     ctx.restore();
+//   }
+// }
+
+function getCuadrand(dx, dy) {
+  const x = dx/Math.abs(dx)
+  const y = dy/Math.abs(dy)
+  if (x == -1 && y == 1) {
+    // -1 1
+    return 0;
+  } else if ((x == 1 || isNaN(x)) && y == 1) {
+    return 1;
+  } else if (x == 1 && (isNaN(y) || y == -1)) {
+    return 2;
+  } else {
+    return 3;
+  }
+}
+
+// TODO: Change to radians and simplify division function below
+const angleNormalize = [
+  (angle) => angle,
+  (angle) => 180 - angle,
+  (angle) => 180 + Math.abs(angle),
+  (angle) => 360 + angle,
+];
+
+function getXinCircle(angle, radius){
+  return Math.cos(angle * Math.PI / 180) * radius;
+}
+function getYinCircle(angle, radius){
+  return Math.sin(angle * Math.PI / 180) * radius;
+}
+
+function division(ev) {
+  const { x, y } = ev;
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  const dx = centerX - x;
+  const dy = centerY - y;
+  const radius = Math.sqrt(dx ** 2 + dy ** 2);
+  const sinThetha = dy / radius;
+  let pointAngle = (Math.asin(sinThetha) * 180) / Math.PI;
+  const angleDivision = 360 / divisions;
+  const cuadrant = getCuadrand(dx,dy)
+  const thetha = angleNormalize[cuadrant](pointAngle);
+  // ctx.strokeRect(x,y,30,30)
+  for(let i=0; i <= divisions; i++){
+    const angle = (i * angleDivision) - thetha;
+    const newX = getXinCircle(angle, radius);
+    const newY = getYinCircle(angle, radius);
+    console.log({newX, newY})
+    // ctx.strokeRect(newX + centerX,newY + centerY,30,30)
+    draw({x: newX + centerX, y: newY + centerY})
+    hue++;
+    hue %= 360;
+  }
+
+}
+
 const brushes = { circle, square };
 
 function circle(x, y, ctx, centered = true) {
@@ -166,7 +244,7 @@ function circle(x, y, ctx, centered = true) {
   ctx.stroke();
 }
 
-function square(x, y, ctx, centered=true) {
+function square(x, y, ctx, centered = true) {
   const centeredAmount = centered ? halfSize : 0;
   ctx.strokeRect(x - centeredAmount, y - centeredAmount, size, size);
 }
@@ -223,13 +301,13 @@ mouseCanvas.style.position = "fixed";
 mouseCanvas.style.zIndex = -1;
 let centerCursorDebounced = false;
 const ctxMouseCanvas = mouseCanvas.getContext("2d");
-function modifyCursor({x,y}={}) {
+function modifyCursor({ x, y } = {}) {
   mouseCanvas.width = size;
   mouseCanvas.height = size;
   ctxMouseCanvas.strokeStyle = "gray";
   // ctxMouseCanvas.strokeRect(0,0, size, size)
   brushes[brush](0, 0, ctxMouseCanvas, false);
-  centerCursor({x,y})
+  centerCursor({ x, y });
 }
 function centerCursor({ x, y }) {
   mouse = { x, y };
