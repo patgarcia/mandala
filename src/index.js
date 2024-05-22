@@ -115,6 +115,21 @@ function changeSize(ev) {
   modifyCursor(mouse);
 }
 
+function onBrushSizeKeypress(ev){
+  const {key} = ev;
+  let tempSize;
+  if(['[',']'].includes(key)){
+    if(key == '['){
+      tempSize = Math.max(size - 10, 0);
+    }else{
+      tempSize = Math.min(size + 10, instanceSizeElem.max);
+    }
+    instanceSizeElem.value = tempSize;
+    changeSize({target:{value: tempSize}})
+  }
+}
+window.addEventListener("keydown", onBrushSizeKeypress);
+
 // AUTO PAINT
 const autoPaintElem = document.getElementById("auto-paint");
 autoPaintElem.onchange = autoPaintOnChange;
