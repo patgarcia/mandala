@@ -4,6 +4,7 @@ let size = 10;
 let autopaint = true;
 let manualpaint = false;
 let brush;
+const imageData = [];
 
 // CANVAS
 const canvas = document.getElementById("canvas");
@@ -16,25 +17,57 @@ const ctx = canvas.getContext("2d");
 
 // MANUAL PAINT
 canvas.onmousedown = function (ev) {
+  saveImageData();
   manualpaint = true;
 };
 canvas.onmouseup = function (ev) {
   manualpaint = false;
 };
 
+// SAVING IMAGE BUFFER
+function saveImageData() {
+    imageData.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    if(imageData.length > 10){
+      imageData.shift();
+    }
+}
+
+function recoverImageData() {
+  if (imageData.length) {
+    data = imageData.pop();
+    ctx.putImageData(data, 0, 0);
+  } else {
+    console.log("Nothing to undo");
+  }
+}
+
+// UNDO FUNCTIONALITY
+function onCtrlZ(ev) {
+  console.log(ev);
+  const comboKey = ev.ctrlKey || ev.metaKey;
+  if (comboKey && ev.key === "z") {
+    recoverImageData();
+  }
+}
+
+window.addEventListener("keydown", onCtrlZ);
+
 // RESET
 const resetElem = document.getElementById("reset");
-resetElem.onclick = (ev) => ctx.clearRect(0, 0, canvas.width, canvas.height);
+resetElem.onclick = (ev) => {
+  saveImageData();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+};
 
 // BRUSH
 const brushElem = document.getElementById("brush");
 brush = brushElem.value;
-console.log({ brush });
-brushElem.onchange = (ev) => brush = ev.target.value;
+brushElem.onchange = (ev) => (brush = ev.target.value);
 
 // INSTANCE SIZE
 const instanceSizeElem = document.getElementById("instance-size");
 instanceSizeElem.onchange = changeSize;
+instanceSizeElem.value = size;
 
 function changeSize(ev) {
   size = ev.target.value;
@@ -97,7 +130,7 @@ function rotated(ev) {
   hue %= 360;
 }
 
-const brushes = {circle, square}
+const brushes = { circle, square };
 
 function circle(x, y) {
   ctx.beginPath();
@@ -109,7 +142,6 @@ function square(x, y) {
   ctx.strokeRect(x, y, size, size);
 }
 
-
 function draw(ev) {
   const { x, y } = ev;
   const { r, g, b } = hslToRgb(hue);
@@ -118,7 +150,6 @@ function draw(ev) {
   ctx.strokeStyle = `rgb(${r},${g},${b})`;
   brushes[brush](x, y);
 }
-
 
 function hslToRgb(h, s = 100, l = 50) {
   // Convert HSL values to 0-1 range
