@@ -1,9 +1,11 @@
 // GLOBALS
 let hue = 0;
 let size = 30;
+let halfSize = size / 2;
 let autopaint = true;
 let manualpaint = false;
 let brush;
+let mouse = {x:0, y:0}
 const imageData = [];
 
 // CANVAS
@@ -11,24 +13,23 @@ const canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth;
 canvas.height = 500;
 
-window.addEventListener('resize', ev => {
+window.addEventListener("resize", (ev) => {
   saveImageData();
   canvas.width = window.innerWidth;
   restoreImageData();
-  
-})
+});
 // TODO: check how to avoid double clicking the canvas and selecting the whole page
 // canvas.ondblclick = function(ev){
 //   ev.preventDefault();
 //   ev.stopPropagation();
 // }
-const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
 // MANUAL PAINT
 canvas.onmousedown = function (ev) {
   saveImageData();
   manualpaint = true;
-  draw(ev)
+  draw(ev);
 };
 canvas.onmouseup = function (ev) {
   manualpaint = false;
@@ -36,11 +37,11 @@ canvas.onmouseup = function (ev) {
 
 // SAVING IMAGE BUFFER
 function saveImageData() {
-    imageData.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-    toggleUndoDisable();
-    if(imageData.length > 10){
-      imageData.shift();
-    }
+  imageData.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+  toggleUndoDisable();
+  if (imageData.length > 10) {
+    imageData.shift();
+  }
 }
 
 function restoreImageData() {
@@ -62,11 +63,11 @@ function onCtrlZ(ev) {
 }
 
 window.addEventListener("keydown", onCtrlZ);
-const undoElem = document.getElementById('undo');
+const undoElem = document.getElementById("undo");
 undoElem.onclick = restoreImageData;
 
-function toggleUndoDisable(){
-  const undoElem = document.getElementById('undo');
+function toggleUndoDisable() {
+  const undoElem = document.getElementById("undo");
   if (imageData.length) {
     undoElem.disabled = false;
   } else {
@@ -84,15 +85,20 @@ resetElem.onclick = (ev) => {
 // BRUSH
 const brushElem = document.getElementById("brush");
 brush = brushElem.value;
-brushElem.onchange = (ev) => (brush = ev.target.value);
+brushElem.onchange = (ev) => {
+  brush = ev.target.value
+  modifyCursor(mouse)
+};
 
 // INSTANCE SIZE
 const instanceSizeElem = document.getElementById("instance-size");
-instanceSizeElem.onchange = changeSize;
+instanceSizeElem.addEventListener('input', changeSize)
 instanceSizeElem.value = size;
 
 function changeSize(ev) {
   size = ev.target.value;
+  halfSize = size / 2;
+  modifyCursor(mouse);
 }
 
 // AUTO PAINT
@@ -153,15 +159,16 @@ function rotated(ev) {
 
 const brushes = { circle, square };
 
-function circle(x, y) {
+function circle(x, y, ctx, centered = true) {
   ctx.beginPath();
-  ctx.arc(x, y, size / 2, 0, Math.PI * 2);
+  const position = (val) => (centered ? val : val + halfSize);
+  ctx.arc(position(x), position(y), halfSize, 0, Math.PI * 2);
   ctx.stroke();
 }
 
-function square(x, y) {
-  const halfSize = size / 2;
-  ctx.strokeRect(x - halfSize, y - halfSize, size, size);
+function square(x, y, ctx, centered=true) {
+  const centeredAmount = centered ? halfSize : 0;
+  ctx.strokeRect(x - centeredAmount, y - centeredAmount, size, size);
 }
 
 function draw(ev) {
@@ -170,7 +177,7 @@ function draw(ev) {
   // ctx.fillStyle = "rgb()";
   // ctx.fillRect(x, y, 100, 100);
   ctx.strokeStyle = `rgb(${r},${g},${b})`;
-  brushes[brush](x, y);
+  brushes[brush](x, y, ctx);
 }
 
 function hslToRgb(h, s = 100, l = 50) {
@@ -209,3 +216,31 @@ function hslToRgb(h, s = 100, l = 50) {
     b: Math.round(b * 255),
   };
 }
+
+// MOUSE CANVAS
+const mouseCanvas = document.getElementById("canvas-mouse");
+mouseCanvas.style.position = "fixed";
+mouseCanvas.style.zIndex = -1;
+let centerCursorDebounced = false;
+const ctxMouseCanvas = mouseCanvas.getContext("2d");
+function modifyCursor({x,y}={}) {
+  mouseCanvas.width = size;
+  mouseCanvas.height = size;
+  ctxMouseCanvas.strokeStyle = "gray";
+  // ctxMouseCanvas.strokeRect(0,0, size, size)
+  brushes[brush](0, 0, ctxMouseCanvas, false);
+  centerCursor({x,y})
+}
+function centerCursor({ x, y }) {
+  mouse = { x, y };
+  if (!centerCursorDebounced) {
+    mouseCanvas.style.left = `${x - halfSize}px`;
+    mouseCanvas.style.top = `${y - halfSize}px`;
+    centerCursorDebounced = true;
+    setTimeout(() => {
+      centerCursorDebounced = false;
+    }, 20);
+  }
+}
+modifyCursor(ctxMouseCanvas);
+document.addEventListener("mousemove", centerCursor);
