@@ -7,7 +7,7 @@ let manualpaint = false;
 let brush;
 let mouse = { x: 0, y: 0 };
 const imageData = [];
-const divisions = 5;
+let divisions = 5;
 
 // CANVAS
 const canvas = document.getElementById("canvas");
@@ -36,7 +36,7 @@ drawPlane();
 canvas.onmousedown = function (ev) {
   saveImageData();
   manualpaint = true;
-  draw(ev);
+  getPaintMode()(ev);
 };
 canvas.onmouseup = function (ev) {
   manualpaint = false;
@@ -80,6 +80,13 @@ function toggleUndoDisable() {
   } else {
     undoElem.disabled = true;
   }
+}
+
+// DIVISIONS
+const divisionElem = document.getElementById('divisions');
+divisionElem.value = divisions;
+divisionElem.onchange = ev => {
+  divisions = ev.target.value;
 }
 
 // RESET
@@ -138,6 +145,12 @@ function setMode(mode) {
   canvas.onmousemove = paintWrapper(modes[mode]);
 }
 
+// Utility to access modes before their declaration
+function getPaintMode(){
+  const modeElem = document.getElementById("modality");
+  return modes[modeElem.value]
+}
+
 function single(ev) {
   draw(ev);
   hue++;
@@ -163,21 +176,6 @@ function rotated(ev) {
   hue++;
   hue %= 360;
 }
-
-// function division(ev) {
-//   const angle = Math.PI * 2 / divisions;
-//   for(let segment=0; segment < divisions; segment++){
-//     ctx.save();
-//     if(segment){
-//       ctx.rotate(segment * angle)
-//       ctx.translate()
-//     }
-//     draw(ev);
-//     hue++;
-//     hue %= 360;
-//     ctx.restore();
-//   }
-// }
 
 function getCuadrand(dx, dy) {
   const x = dx/Math.abs(dx)
@@ -226,7 +224,6 @@ function division(ev) {
     const angle = (i * angleDivision) - thetha;
     const newX = getXinCircle(angle, radius);
     const newY = getYinCircle(angle, radius);
-    console.log({newX, newY})
     // ctx.strokeRect(newX + centerX,newY + centerY,30,30)
     draw({x: newX + centerX, y: newY + centerY})
     hue++;
