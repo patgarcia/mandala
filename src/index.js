@@ -1,6 +1,6 @@
 // GLOBALS
 let hue = 0;
-let size = 10;
+let size = 30;
 let autopaint = true;
 let manualpaint = false;
 let brush;
@@ -8,6 +8,15 @@ const imageData = [];
 
 // CANVAS
 const canvas = document.getElementById("canvas");
+canvas.width = window.innerWidth;
+canvas.height = 500;
+
+window.addEventListener('resize', ev => {
+  saveImageData();
+  canvas.width = window.innerWidth;
+  restoreImageData();
+  
+})
 // TODO: check how to avoid double clicking the canvas and selecting the whole page
 // canvas.ondblclick = function(ev){
 //   ev.preventDefault();
@@ -27,30 +36,42 @@ canvas.onmouseup = function (ev) {
 // SAVING IMAGE BUFFER
 function saveImageData() {
     imageData.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    toggleUndoDisable();
     if(imageData.length > 10){
       imageData.shift();
     }
 }
 
-function recoverImageData() {
+function restoreImageData() {
   if (imageData.length) {
     data = imageData.pop();
     ctx.putImageData(data, 0, 0);
   } else {
     console.log("Nothing to undo");
   }
+  toggleUndoDisable();
 }
 
 // UNDO FUNCTIONALITY
 function onCtrlZ(ev) {
-  console.log(ev);
   const comboKey = ev.ctrlKey || ev.metaKey;
   if (comboKey && ev.key === "z") {
-    recoverImageData();
+    restoreImageData();
   }
 }
 
 window.addEventListener("keydown", onCtrlZ);
+const undoElem = document.getElementById('undo');
+undoElem.onclick = restoreImageData;
+
+function toggleUndoDisable(){
+  const undoElem = document.getElementById('undo');
+  if (imageData.length) {
+    undoElem.disabled = false;
+  } else {
+    undoElem.disabled = true;
+  }
+}
 
 // RESET
 const resetElem = document.getElementById("reset");
@@ -76,7 +97,6 @@ function changeSize(ev) {
 // AUTO PAINT
 const autoPaintElem = document.getElementById("auto-paint");
 autoPaintElem.onchange = autoPaintOnChange;
-const drawingEventType = { false: "onmousedown", true: "onmousemove" };
 
 function autoPaintOnChange(ev) {
   autopaint = ev.target.checked;
@@ -91,7 +111,7 @@ const paintWrapper = (paintType) => (ev) =>
   autopaint || manualpaint ? paintType(ev) : null;
 
 //initialize mode
-canvas[drawingEventType[autopaint]] = paintWrapper(single);
+canvas.onmousemove = paintWrapper(single);
 modeElem.onchange = modeOnChange;
 
 function modeOnChange(ev) {
@@ -134,12 +154,13 @@ const brushes = { circle, square };
 
 function circle(x, y) {
   ctx.beginPath();
-  ctx.arc(x, y, size, 0, Math.PI * 2);
+  ctx.arc(x, y, size / 2, 0, Math.PI * 2);
   ctx.stroke();
 }
 
 function square(x, y) {
-  ctx.strokeRect(x, y, size, size);
+  const halfSize = size / 2;
+  ctx.strokeRect(x - halfSize, y - halfSize, size, size);
 }
 
 function draw(ev) {
