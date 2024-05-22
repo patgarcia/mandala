@@ -28,6 +28,7 @@ const ctx = canvas.getContext("2d");
 canvas.onmousedown = function (ev) {
   saveImageData();
   manualpaint = true;
+  draw(ev)
 };
 canvas.onmouseup = function (ev) {
   manualpaint = false;
