@@ -137,6 +137,13 @@ autoPaintElem.onchange = autoPaintOnChange;
 function autoPaintOnChange(ev) {
   autopaint = ev.target.checked;
 }
+window.addEventListener("keydown", (ev) => {
+  if(ev.key === "a"){
+    autopaint = !autopaint
+    autoPaintElem.checked = autopaint;
+    saveImageData();
+  }
+});
 
 // MODES
 const modeElem = document.getElementById("modality");
