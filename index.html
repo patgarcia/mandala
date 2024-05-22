@@ -11,10 +11,22 @@
       padding: 0;
       cursor: crosshair;
     }
+    .hide{
+      opacity: 0;
+    }
+    .fix-to-top{
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: -1;
+    }
   </style>
 </head>
 <body>
   <canvas id="canvas">
+    Javascript not available in this browser
+  </canvas>
+  <canvas id="canvas-guides" class="fix-to-top">
     Javascript not available in this browser
   </canvas>
   <canvas id="canvas-mouse" width=50 height=50>
@@ -43,6 +55,9 @@
     <button type="button" id="reset">reset</button>
     <!-- Undo -->
     <button type="button" id="undo" disabled>undo</button>
+    <!-- Guides -->
+    <label for="guides">guides</label>
+    <button type="button" id="guides">show</button>
     <!-- Reset -->
     <label for="instance-size">size</label>
     <input type="range" name="instance-size" id="instance-size" min=2 max=500>

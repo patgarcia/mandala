@@ -19,18 +19,46 @@ window.addEventListener("resize", (ev) => {
   canvas.width = window.innerWidth;
   restoreImageData();
 });
+const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
 // TODO: check how to avoid double clicking the canvas and selecting the whole page
 // canvas.ondblclick = function(ev){
 //   ev.preventDefault();
 //   ev.stopPropagation();
 // }
-const ctx = canvas.getContext("2d", { willReadFrequently: true });
-function drawPlane() {
+
+// VISUAL GUIDES
+const canvasGuides = document.getElementById("canvas-guides");
+canvasGuides.width = window.innerWidth;
+canvasGuides.height = 500;
+window.addEventListener("resize", (ev) => {
+  canvasGuides.width = window.innerWidth;
+  drawPlane(ctxGuides)
+});
+const ctxGuides = canvasGuides.getContext("2d", { willReadFrequently: true });
+
+function drawPlane(ctx) {
   ctx.strokeStyle = "black";
   ctx.strokeRect(0, canvas.height / 2, canvas.width, 0);
   ctx.strokeRect(canvas.width / 2, 0, 0, canvas.height);
 }
-drawPlane();
+drawPlane(ctxGuides);
+
+const guidesElem = document.getElementById('guides');
+guidesElem.onclick = ev => {
+  const {classList} = canvasGuides
+  const isHidden = classList.contains('hide');
+  console.log({isHidden})
+  if(isHidden){
+    classList.remove('hide')
+  }else{
+    classList.add('hide')
+
+  }
+}
+
+
+
 
 // MANUAL PAINT
 canvas.onmousedown = function (ev) {
@@ -65,6 +93,7 @@ function restoreImageData() {
 function onCtrlZ(ev) {
   const comboKey = ev.ctrlKey || ev.metaKey;
   if (comboKey && ev.key === "z") {
+    ev.preventDefault();
     restoreImageData();
   }
 }
