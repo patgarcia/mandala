@@ -9,6 +9,9 @@ let mouse = { x: 0, y: 0 };
 const imageData = [];
 let divisions = 5;
 
+// Touch check
+const touchSupported = 'ontouchstart' in window || navigator.msMaxTouchPoints;
+
 // CANVAS
 const canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth;
@@ -183,7 +186,9 @@ const paintWrapper = (paintType) => (ev) =>
   autopaint || manualpaint ? paintType(ev) : null;
 
 //initialize mode
-canvas.onmousemove = paintWrapper(single);
+const moveEvent = touchSupported ? 'touchmove' : 'mousemove';
+canvas.addEventListener(moveEvent, paintWrapper(single));
+let prevEventListener - paintWrapper(single);
 modeElem.onchange = modeOnChange;
 
 function modeOnChange(ev) {
@@ -193,7 +198,9 @@ function modeOnChange(ev) {
 
 function setMode(mode) {
   // switch mode and its event handler based on autopaint
-  canvas.onmousemove = paintWrapper(modes[mode]);
+  canvas.removeEventListener(moveEvent, prevEventListener);
+  canvas.addEventListener(moveEvent, paintWrapper(modes[mode]));
+  prevEventListener = paintWrapper(modes[mode]);
 }
 
 // Utility to access modes before their declaration
