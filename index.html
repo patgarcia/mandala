@@ -1,69 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Canvas Playful testing</title>
-  <script src="./src/index.js" type="text/javascript" defer></script>
-  <style>
-    body{
-      margin: 0;
-      padding: 0;
-      cursor: crosshair;
-    }
-    .hide{
-      opacity: 0;
-    }
-    .fix-to-top{
-      position: fixed;
-      top: 0;
-      right: 0;
-      z-index: -1;
-    }
-  </style>
-</head>
-<body>
-  <canvas id="canvas">
-    Javascript not available in this browser
-  </canvas>
-  <canvas id="canvas-guides" class="fix-to-top">
-    Javascript not available in this browser
-  </canvas>
-  <canvas id="canvas-mouse" width=50 height=50>
-    Javascript not available in this browser
-  </canvas>
-  <section>
-    <!-- Modality -->
-    <label for="modality">mode</label>
-    <select name="modality" id="modality">
-      <option value="single">single</option>
-      <option value="rotated">rotated</option>
-      <option value="reflected">reflected</option>
-      <option value="division" selected>division</option>
-      <optiom></optiom>
-    </select>
-    <!-- Brush -->
-    <label for="brush">brush</label>
-    <select name="brush" id="brush">
-      <option value="circle">circle</option>
-      <option value="square">square</option>
-      <optiom></optiom>
-    </select>
-    <!-- Divisions -->
-    <input type="number" id="divisions" min=0 max=20 />
-    <!-- Reset -->
-    <button type="button" id="reset">reset</button>
-    <!-- Undo -->
-    <button type="button" id="undo" disabled>undo</button>
-    <!-- Guides -->
-    <label for="guides">guides</label>
-    <button type="button" id="guides">show</button>
-    <!-- Reset -->
-    <label for="instance-size">size</label>
-    <input type="range" name="instance-size" id="instance-size" min=2 max=500>
-    <!-- AutoPaint -->
-    <label for="auto-paint">autopaint</label>
-    <input type="checkbox" name="auto-paint" id="auto-paint" checked>
-  </section>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canvas Playful testing</title>
+    <script src="./src/index.js" type="text/javascript" defer></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        cursor: crosshair;
+        font-size: 1rem;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      input,button, select{
+        font-size: 1rem;
+      }
+      .controllers{
+        padding: 1rem;
+        padding-top: 2rem;
+        line-height: 2.5rem;
+        text-align: center;
+      }
+      .hide {
+        opacity: 0;
+      }
+      .fix-to-top {
+        position: fixed;
+        top: 0;
+        right: 0;
+        z-index: -1;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"> Javascript not available in this browser </canvas>
+    <canvas id="canvas-guides" class="fix-to-top">
+      Javascript not available in this browser
+    </canvas>
+    <canvas id="canvas-mouse" width="50" height="50">
+      Javascript not available in this browser
+    </canvas>
+    <section class="controllers">
+      <!-- Modality -->
+      <label for="modality">mode</label>&nbsp;
+      <select name="modality" id="modality">
+        <option value="single">single</option>
+        <option value="rotated">rotated</option>
+        <option value="reflected">reflected</option>
+        <option value="division" selected>division</option>
+        <optiom></optiom>
+      </select>
+      <!-- Divisions -->
+      <input type="number" id="divisions" min="0" max="20" />
+      <!-- Brush -->
+      <label for="brush">brush</label>&nbsp;
+      <select name="brush" id="brush">
+        <option value="circle">circle</option>
+        <option value="square">square</option>
+        <optiom></optiom>
+      </select>
+      <!-- Reset -->
+      <button type="button" id="reset">reset</button>
+      <!-- Undo -->
+      <button type="button" id="undo" disabled>undo</button>
+      <!-- Guides -->
+      <label for="guides">guides</label>&nbsp;
+      <button type="button" id="guides">show</button>
+      <!-- Reset -->
+      <label for="instance-size">size</label>&nbsp;
+      <input
+        type="range"
+        name="instance-size"
+        id="instance-size"
+        min="2"
+        max="500"
+      />
+      <!-- AutoPaint -->
+      <label for="auto-paint">autopaint</label>
+      <input type="checkbox" name="auto-paint" id="auto-paint" checked />
+    </section>
+  </body>
 </html>

@@ -204,8 +204,17 @@ const paintWrapper = (paintType) => (ev) => {
 canvas[eventListeners[+touchSupported].move] = paintWrapper(division);
 modeElem.onchange = modeOnChange;
 
+function deactivateDivisions(mode){
+  if(mode !== 'division'){
+    divisionElem.disabled = true;
+  }else{
+    divisionElem.disabled = false;
+  }
+}
+
 function modeOnChange(ev) {
   const mode = ev?.target.value;
+  deactivateDivisions(mode)
   setMode(mode);
 }
 
