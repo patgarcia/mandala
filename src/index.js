@@ -9,8 +9,17 @@ let mouse = { x: 0, y: 0 };
 const imageData = [];
 let divisions = 5;
 
+
 // Touch check
-const touchSupported = 'ontouchstart' in window || navigator.msMaxTouchPoints;
+const touchSupported = !!(
+  "ontouchstart" in window || navigator.msMaxTouchPoints
+);
+
+// window.addEventListener("touchmove");
+const eventListeners = [
+  { start: "onmousedown", move: "onmousemove", end: "onmouseup" },
+  { start: "ontouchstart", move: "ontouchmove", end: "ontouchend" },
+];
 
 // CANVAS
 const canvas = document.getElementById("canvas");
@@ -36,7 +45,7 @@ canvasGuides.width = window.innerWidth;
 canvasGuides.height = 500;
 window.addEventListener("resize", (ev) => {
   canvasGuides.width = window.innerWidth;
-  drawPlane(ctxGuides)
+  drawPlane(ctxGuides);
 });
 const ctxGuides = canvasGuides.getContext("2d", { willReadFrequently: true });
 
@@ -47,29 +56,32 @@ function drawPlane(ctx) {
 }
 drawPlane(ctxGuides);
 
-const guidesElem = document.getElementById('guides');
-guidesElem.onclick = ev => {
-  const {classList} = canvasGuides
-  const isHidden = classList.contains('hide');
-  console.log({isHidden})
-  if(isHidden){
-    classList.remove('hide')
-  }else{
-    classList.add('hide')
-
+const guidesElem = document.getElementById("guides");
+guidesElem.onclick = (ev) => {
+  const { classList } = canvasGuides;
+  const isHidden = classList.contains("hide");
+  if (isHidden) {
+    classList.remove("hide");
+  } else {
+    classList.add("hide");
   }
+};
+
+function extractTouchData(ev) {
+  if (touchSupported) {
+    const [touches] = ev.touches;
+    ev = { ev, x: touches.clientX, y: touches.clientY };
+  }
+  return ev;
 }
 
-
-
-
 // MANUAL PAINT
-canvas.onmousedown = function (ev) {
+canvas[eventListeners[+touchSupported].start] = function (ev) {
   saveImageData();
   manualpaint = true;
   getPaintMode()(ev);
 };
-canvas.onmouseup = function (ev) {
+canvas[eventListeners[+touchSupported].end] = function (ev) {
   manualpaint = false;
 };
 
@@ -115,11 +127,11 @@ function toggleUndoDisable() {
 }
 
 // DIVISIONS
-const divisionElem = document.getElementById('divisions');
+const divisionElem = document.getElementById("divisions");
 divisionElem.value = divisions;
-divisionElem.onchange = ev => {
+divisionElem.onchange = (ev) => {
   divisions = ev.target.value;
-}
+};
 
 // RESET
 const resetElem = document.getElementById("reset");
@@ -147,17 +159,17 @@ function changeSize(ev) {
   modifyCursor(mouse);
 }
 
-function onBrushSizeKeypress(ev){
-  const {key} = ev;
+function onBrushSizeKeypress(ev) {
+  const { key } = ev;
   let tempSize;
-  if(['[',']'].includes(key)){
-    if(key == '['){
+  if (["[", "]"].includes(key)) {
+    if (key == "[") {
       tempSize = Math.max(size - 10, 0);
-    }else{
+    } else {
       tempSize = Math.min(size + 10, instanceSizeElem.max);
     }
     instanceSizeElem.value = tempSize;
-    changeSize({target:{value: tempSize}})
+    changeSize({ target: { value: tempSize } });
   }
 }
 window.addEventListener("keydown", onBrushSizeKeypress);
@@ -170,8 +182,8 @@ function autoPaintOnChange(ev) {
   autopaint = ev.target.checked;
 }
 window.addEventListener("keydown", (ev) => {
-  if(ev.key === "a"){
-    autopaint = !autopaint
+  if (ev.key === "a") {
+    autopaint = !autopaint;
     autoPaintElem.checked = autopaint;
     saveImageData();
   }
@@ -182,13 +194,14 @@ const modeElem = document.getElementById("modality");
 const modes = { single, rotated, reflected, division };
 
 // WRAPPERS
-const paintWrapper = (paintType) => (ev) =>
-  autopaint || manualpaint ? paintType(ev) : null;
+const paintWrapper = (paintType) => (ev) => {
+  ev.preventDefault();
+  ev = extractTouchData(ev);
+  return autopaint || manualpaint ? paintType(ev) : null;
+};
 
 //initialize mode
-const moveEvent = touchSupported ? 'touchmove' : 'mousemove';
-canvas.addEventListener(moveEvent, paintWrapper(single));
-let prevEventListener - paintWrapper(single);
+canvas[eventListeners[+touchSupported].move] = paintWrapper(division);
 modeElem.onchange = modeOnChange;
 
 function modeOnChange(ev) {
@@ -198,15 +211,13 @@ function modeOnChange(ev) {
 
 function setMode(mode) {
   // switch mode and its event handler based on autopaint
-  canvas.removeEventListener(moveEvent, prevEventListener);
-  canvas.addEventListener(moveEvent, paintWrapper(modes[mode]));
-  prevEventListener = paintWrapper(modes[mode]);
+  canvas[eventListeners[+touchSupported].move] = paintWrapper(modes[mode]);
 }
 
 // Utility to access modes before their declaration
-function getPaintMode(){
+function getPaintMode() {
   const modeElem = document.getElementById("modality");
-  return modes[modeElem.value]
+  return paintWrapper(modes[modeElem.value]);
 }
 
 function single(ev) {
@@ -236,8 +247,8 @@ function rotated(ev) {
 }
 
 function getCuadrand(dx, dy) {
-  const x = dx/Math.abs(dx)
-  const y = dy/Math.abs(dy)
+  const x = dx / Math.abs(dx);
+  const y = dy / Math.abs(dy);
   if (x == -1 && y == 1) {
     // -1 1
     return 0;
@@ -258,11 +269,11 @@ const angleNormalize = [
   (angle) => 360 + angle,
 ];
 
-function getXinCircle(angle, radius){
-  return Math.cos(angle * Math.PI / 180) * radius;
+function getXinCircle(angle, radius) {
+  return Math.cos((angle * Math.PI) / 180) * radius;
 }
-function getYinCircle(angle, radius){
-  return Math.sin(angle * Math.PI / 180) * radius;
+function getYinCircle(angle, radius) {
+  return Math.sin((angle * Math.PI) / 180) * radius;
 }
 
 function division(ev) {
@@ -275,19 +286,18 @@ function division(ev) {
   const sinThetha = dy / radius;
   let pointAngle = (Math.asin(sinThetha) * 180) / Math.PI;
   const angleDivision = 360 / divisions;
-  const cuadrant = getCuadrand(dx,dy)
+  const cuadrant = getCuadrand(dx, dy);
   const thetha = angleNormalize[cuadrant](pointAngle);
   // ctx.strokeRect(x,y,30,30)
-  for(let i=0; i <= divisions; i++){
-    const angle = (i * angleDivision) - thetha;
+  for (let i = 0; i <= divisions; i++) {
+    const angle = i * angleDivision - thetha;
     const newX = getXinCircle(angle, radius);
     const newY = getYinCircle(angle, radius);
     // ctx.strokeRect(newX + centerX,newY + centerY,30,30)
-    draw({x: newX + centerX, y: newY + centerY})
+    draw({ x: newX + centerX, y: newY + centerY });
     hue++;
     hue %= 360;
   }
-
 }
 
 const brushes = { circle, square };
