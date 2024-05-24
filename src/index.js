@@ -236,6 +236,7 @@ const autoPaintElem = document.getElementById("auto-paint");
 autoPaintElem.onchange = autoPaintOnChange;
 
 function autoPaintOnChange(ev) {
+  console.log(ev.target.checked)
   autopaint = ev.target.checked;
 }
 window.addEventListener("keydown", (ev) => {
@@ -248,9 +249,9 @@ window.addEventListener("keydown", (ev) => {
 
 // FILL
 const fillElem = document.getElementById("fill");
-fillElem.onchange = autoPaintOnChange;
+fillElem.onchange = fillOnChange;
 
-function autoPaintOnChange(ev) {
+function fillOnChange(ev) {
   fill = ev.target.checked;
 }
 window.addEventListener("keydown", (ev) => {
