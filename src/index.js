@@ -7,11 +7,10 @@ let manualpaint = false;
 let brush;
 let mouse = { x: 0, y: 0 };
 let rainbow = true;
-let color = '#000';
+let color = "#000";
 let fill = false;
 const imageData = [];
 let divisions = 5;
-
 
 // Touch check
 const touchSupported = !!(
@@ -28,6 +27,7 @@ const eventListeners = [
 const canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth;
 canvas.height = 500;
+canvas.onchange = ev => console.log("does this work?")
 
 window.addEventListener("resize", (ev) => {
   saveImageData();
@@ -65,10 +65,10 @@ guidesElem.onclick = (ev) => {
   const isHidden = classList.contains("hide");
   if (isHidden) {
     classList.remove("hide");
-    guidesElem.innerText = "hide"
+    guidesElem.innerText = "hide";
   } else {
     classList.add("hide");
-    guidesElem.innerText = "show"
+    guidesElem.innerText = "show";
   }
 };
 
@@ -130,6 +130,10 @@ function toggleUndoDisable() {
     undoElem.disabled = true;
   }
 }
+function toggleDownloadDisable(override=false) {
+  const downloadElem = document.getElementById("download");
+  downloadElem.disabled = override ? false : true;
+}
 
 // DIVISIONS
 const divisionElem = document.getElementById("divisions");
@@ -142,8 +146,13 @@ divisionElem.onchange = (ev) => {
 const resetElem = document.getElementById("reset");
 resetElem.onclick = (ev) => {
   saveImageData();
+  toggleDownloadDisable();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 };
+
+// DOWNLOAD
+const downloadElem = document.getElementById("download");
+downloadElem.onclick = (ev) => downloadImage(ev);
 
 // BRUSH
 const brushElem = document.getElementById("brush");
@@ -154,46 +163,46 @@ brushElem.onchange = (ev) => {
 };
 
 // BRUSH COLOR
-const colorElem = document.getElementById('color');
-colorElem.oninput = ev => {
+const colorElem = document.getElementById("color");
+colorElem.oninput = (ev) => {
   color = colorElem.value;
   desaturateRainbow();
-}
+};
 
 // RAINBOW
-const rainbowElem = document.getElementById('rainbow');
-rainbowElem.onchange = ev => {
+const rainbowElem = document.getElementById("rainbow");
+rainbowElem.onchange = (ev) => {
   rainbow = rainbowElem.checked;
-  toggleRainbowSaturation()
+  toggleRainbowSaturation();
   saveImageData();
-}
-const rainbowImgElem = document.getElementById('rainbow-image');
+};
+const rainbowImgElem = document.getElementById("rainbow-image");
 rainbowImgElem.onclick = toggleRainbowCheckbox;
 
-function toggleRainbowCheckbox(ev){
-  rainbowElem.checked = !rainbowElem.checked
+function toggleRainbowCheckbox(ev) {
+  rainbowElem.checked = !rainbowElem.checked;
   rainbow = rainbowElem.checked;
-  toggleRainbowSaturation()
+  toggleRainbowSaturation();
   saveImageData();
 }
 
-function desaturate(elem){
-    elem.classList.add('desaturate')
+function desaturate(elem) {
+  elem.classList.add("desaturate");
 }
-function saturate(elem){
-  elem.classList.remove('desaturate')
+function saturate(elem) {
+  elem.classList.remove("desaturate");
 }
-function toggleRainbowSaturation(){
-  if(rainbowElem.checked){
-    saturate(rainbowImgElem)
-  }else{
-    desaturate(rainbowImgElem)
+function toggleRainbowSaturation() {
+  if (rainbowElem.checked) {
+    saturate(rainbowImgElem);
+  } else {
+    desaturate(rainbowImgElem);
   }
 }
-function desaturateRainbow(){
+function desaturateRainbow() {
   rainbowElem.checked = false;
   rainbow = false;
-  desaturate(rainbowImgElem)
+  desaturate(rainbowImgElem);
 }
 
 // INSTANCE SIZE
@@ -252,7 +261,6 @@ window.addEventListener("keydown", (ev) => {
   }
 });
 
-
 // MODES
 const modeElem = document.getElementById("modality");
 const modes = { single, rotated, reflected, division };
@@ -261,6 +269,7 @@ const modes = { single, rotated, reflected, division };
 const paintWrapper = (paintType) => (ev) => {
   ev.preventDefault();
   ev = extractTouchData(ev);
+  toggleDownloadDisable(true);
   return autopaint || manualpaint ? paintType(ev) : null;
 };
 
@@ -268,17 +277,17 @@ const paintWrapper = (paintType) => (ev) => {
 canvas[eventListeners[+touchSupported].move] = paintWrapper(division);
 modeElem.onchange = modeOnChange;
 
-function deactivateDivisions(mode){
-  if(mode !== 'division'){
+function deactivateDivisions(mode) {
+  if (mode !== "division") {
     divisionElem.disabled = true;
-  }else{
+  } else {
     divisionElem.disabled = false;
   }
 }
 
 function modeOnChange(ev) {
   const mode = ev?.target.value;
-  deactivateDivisions(mode)
+  deactivateDivisions(mode);
   setMode(mode);
 }
 
@@ -375,19 +384,19 @@ function division(ev) {
 
 const brushes = { circle, square };
 
-function circle(x, y, ctx, centered = true, cursor=false) {
+function circle(x, y, ctx, centered = true, cursor = false) {
   ctx.beginPath();
   const position = (val) => (centered ? val : val + halfSize);
   ctx.arc(position(x), position(y), halfSize, 0, Math.PI * 2);
-  if(!cursor && fill){
+  if (!cursor && fill) {
     ctx.fill();
   }
   ctx.stroke();
 }
 
-function square(x, y, ctx, centered = true, cursor=false) {
+function square(x, y, ctx, centered = true, cursor = false) {
   const centeredAmount = centered ? halfSize : 0;
-  const rectType = !cursor && fill ? 'fillRect' : 'strokeRect';
+  const rectType = !cursor && fill ? "fillRect" : "strokeRect";
   ctx[rectType](x - centeredAmount, y - centeredAmount, size, size);
 }
 
@@ -399,6 +408,19 @@ function draw(ev) {
   ctx.strokeStyle = rainbow ? `rgb(${r},${g},${b})` : color;
   ctx.fillStyle = rainbow ? `rgb(${r},${g},${b})` : color;
   brushes[brush](x, y, ctx);
+}
+
+// DOWNLOAD
+
+function downloadImage(ev) {
+  const a = document.createElement("a");
+  a.href = canvas
+    .toDataURL("image/png", 1)
+    .replace("image/png", "image/octet-stream");
+  a.download = `mandala.patricio.work.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 function hslToRgb(h, s = 100, l = 50) {
