@@ -236,7 +236,6 @@ const autoPaintElem = document.getElementById("auto-paint");
 autoPaintElem.onchange = autoPaintOnChange;
 
 function autoPaintOnChange(ev) {
-  console.log(ev.target.checked)
   autopaint = ev.target.checked;
 }
 window.addEventListener("keydown", (ev) => {
