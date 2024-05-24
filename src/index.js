@@ -6,6 +6,9 @@ let autopaint = true;
 let manualpaint = false;
 let brush;
 let mouse = { x: 0, y: 0 };
+let rainbow = true;
+let color = '#000';
+let fill = false;
 const imageData = [];
 let divisions = 5;
 
@@ -62,8 +65,10 @@ guidesElem.onclick = (ev) => {
   const isHidden = classList.contains("hide");
   if (isHidden) {
     classList.remove("hide");
+    guidesElem.innerText = "hide"
   } else {
     classList.add("hide");
+    guidesElem.innerText = "show"
   }
 };
 
@@ -148,6 +153,49 @@ brushElem.onchange = (ev) => {
   modifyCursor(mouse);
 };
 
+// BRUSH COLOR
+const colorElem = document.getElementById('color');
+colorElem.oninput = ev => {
+  color = colorElem.value;
+  desaturateRainbow();
+}
+
+// RAINBOW
+const rainbowElem = document.getElementById('rainbow');
+rainbowElem.onchange = ev => {
+  rainbow = rainbowElem.checked;
+  toggleRainbowSaturation()
+  saveImageData();
+}
+const rainbowImgElem = document.getElementById('rainbow-image');
+rainbowImgElem.onclick = toggleRainbowCheckbox;
+
+function toggleRainbowCheckbox(ev){
+  rainbowElem.checked = !rainbowElem.checked
+  rainbow = rainbowElem.checked;
+  toggleRainbowSaturation()
+  saveImageData();
+}
+
+function desaturate(elem){
+    elem.classList.add('desaturate')
+}
+function saturate(elem){
+  elem.classList.remove('desaturate')
+}
+function toggleRainbowSaturation(){
+  if(rainbowElem.checked){
+    saturate(rainbowImgElem)
+  }else{
+    desaturate(rainbowImgElem)
+  }
+}
+function desaturateRainbow(){
+  rainbowElem.checked = false;
+  rainbow = false;
+  desaturate(rainbowImgElem)
+}
+
 // INSTANCE SIZE
 const instanceSizeElem = document.getElementById("instance-size");
 instanceSizeElem.addEventListener("input", changeSize);
@@ -188,6 +236,22 @@ window.addEventListener("keydown", (ev) => {
     saveImageData();
   }
 });
+
+// FILL
+const fillElem = document.getElementById("fill");
+fillElem.onchange = autoPaintOnChange;
+
+function autoPaintOnChange(ev) {
+  fill = ev.target.checked;
+}
+window.addEventListener("keydown", (ev) => {
+  if (ev.key === "f") {
+    fill = !fill;
+    fillElem.checked = fill;
+    saveImageData();
+  }
+});
+
 
 // MODES
 const modeElem = document.getElementById("modality");
@@ -311,16 +375,20 @@ function division(ev) {
 
 const brushes = { circle, square };
 
-function circle(x, y, ctx, centered = true) {
+function circle(x, y, ctx, centered = true, cursor=false) {
   ctx.beginPath();
   const position = (val) => (centered ? val : val + halfSize);
   ctx.arc(position(x), position(y), halfSize, 0, Math.PI * 2);
+  if(!cursor && fill){
+    ctx.fill();
+  }
   ctx.stroke();
 }
 
-function square(x, y, ctx, centered = true) {
+function square(x, y, ctx, centered = true, cursor=false) {
   const centeredAmount = centered ? halfSize : 0;
-  ctx.strokeRect(x - centeredAmount, y - centeredAmount, size, size);
+  const rectType = !cursor && fill ? 'fillRect' : 'strokeRect';
+  ctx[rectType](x - centeredAmount, y - centeredAmount, size, size);
 }
 
 function draw(ev) {
@@ -328,7 +396,8 @@ function draw(ev) {
   const { r, g, b } = hslToRgb(hue);
   // ctx.fillStyle = "rgb()";
   // ctx.fillRect(x, y, 100, 100);
-  ctx.strokeStyle = `rgb(${r},${g},${b})`;
+  ctx.strokeStyle = rainbow ? `rgb(${r},${g},${b})` : color;
+  ctx.fillStyle = rainbow ? `rgb(${r},${g},${b})` : color;
   brushes[brush](x, y, ctx);
 }
 
@@ -379,8 +448,7 @@ function modifyCursor({ x, y } = {}) {
   mouseCanvas.width = size;
   mouseCanvas.height = size;
   ctxMouseCanvas.strokeStyle = "gray";
-  // ctxMouseCanvas.strokeRect(0,0, size, size)
-  brushes[brush](0, 0, ctxMouseCanvas, false);
+  brushes[brush](0, 0, ctxMouseCanvas, false, true);
   centerCursor({ x, y });
 }
 function centerCursor({ x, y }) {
@@ -391,7 +459,7 @@ function centerCursor({ x, y }) {
     centerCursorDebounced = true;
     setTimeout(() => {
       centerCursorDebounced = false;
-    }, 20);
+    }, 10);
   }
 }
 modifyCursor(ctxMouseCanvas);

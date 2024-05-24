@@ -13,10 +13,12 @@
         font-size: 1rem;
         font-family: Arial, Helvetica, sans-serif;
       }
-      input,button, select{
+      input,
+      button,
+      select {
         font-size: 1rem;
       }
-      .controllers{
+      .controllers {
         padding: 1rem;
         padding-top: 2rem;
         line-height: 2.5rem;
@@ -30,6 +32,43 @@
         top: 0;
         right: 0;
         z-index: -1;
+      }
+      #rainbow-image {
+        width: 26px;
+        height: 26px;
+        border-radius: 4px;
+        background-image: linear-gradient(
+          90deg,
+          rgba(255, 0, 0, 1) 0%,
+          rgba(255, 154, 0, 1) 10%,
+          rgba(208, 222, 33, 1) 20%,
+          rgba(79, 220, 74, 1) 30%,
+          rgba(63, 218, 216, 1) 40%,
+          rgba(47, 201, 226, 1) 50%,
+          rgba(28, 127, 238, 1) 60%,
+          rgba(95, 21, 242, 1) 70%,
+          rgba(186, 12, 248, 1) 80%,
+          rgba(251, 7, 217, 1) 90%,
+          rgba(255, 0, 0, 1) 100%
+        );
+        display: inline-flex;
+        vertical-align: middle;
+        justify-content: center;
+        padding: 0;
+        margin-top: -5px;
+        cursor: pointer;
+        transition: filter .3s ease-in-out;
+      }
+      .desaturate{
+        filter: grayscale(100%);
+      }
+      .divider{
+        font-size: 1.4rem;
+        font-weight: 100;
+        color: #bbba;
+      }
+      #guides{
+        width: 4.5rem;
       }
     </style>
   </head>
@@ -53,6 +92,7 @@
       </select>
       <!-- Divisions -->
       <input type="number" id="divisions" min="0" max="20" />
+      <br />
       <!-- Brush -->
       <label for="brush">brush</label>&nbsp;
       <select name="brush" id="brush">
@@ -60,25 +100,40 @@
         <option value="square">square</option>
         <optiom></optiom>
       </select>
+      <!-- <label for="instance-size">size</label>&nbsp; -->
+      <!-- Size -->
+      <input
+      type="range"
+      name="instance-size"
+      id="instance-size"
+      min="2"
+      max="500"
+      />
+      <br />
+      <!-- Color -->
+      <label for="color">color</label>&nbsp;
+      <input type="color" id="color" /> 
+      <span class="divider">|</span> 
+      <div id="rainbow-image">
+      </div>
+      <input type="checkbox" id="rainbow" checked />
+      <!-- AutoPaint -->
+      <span class="divider">|</span> 
+      <label for="auto-paint">autopaint</label>
+      <input type="checkbox" name="auto-paint" id="auto-paint" checked />
+      <!-- Fill -->
+      <span class="divider">|</span> 
+      <label for="fill">fill</label>
+      <input type="checkbox" name="fill" id="fill" />
+      <br />
       <!-- Reset -->
       <button type="button" id="reset">reset</button>
       <!-- Undo -->
       <button type="button" id="undo" disabled>undo</button>
       <!-- Guides -->
+      <span class="divider">|</span> 
       <label for="guides">guides</label>&nbsp;
-      <button type="button" id="guides">show</button>
-      <!-- Reset -->
-      <label for="instance-size">size</label>&nbsp;
-      <input
-        type="range"
-        name="instance-size"
-        id="instance-size"
-        min="2"
-        max="500"
-      />
-      <!-- AutoPaint -->
-      <label for="auto-paint">autopaint</label>
-      <input type="checkbox" name="auto-paint" id="auto-paint" checked />
+      <button type="button" id="guides">hide</button>
     </section>
   </body>
 </html>
