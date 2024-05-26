@@ -403,8 +403,6 @@ function square(x, y, ctx, centered = true, cursor = false) {
 function draw(ev) {
   const { x, y } = ev;
   const { r, g, b } = hslToRgb(hue);
-  // ctx.fillStyle = "rgb()";
-  // ctx.fillRect(x, y, 100, 100);
   ctx.strokeStyle = rainbow ? `rgb(${r},${g},${b})` : color;
   ctx.fillStyle = rainbow ? `rgb(${r},${g},${b})` : color;
   brushes[brush](x, y, ctx);
